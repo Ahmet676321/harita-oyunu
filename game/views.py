@@ -1,6 +1,9 @@
 import json
+import random
+import string
+
 from django.http import JsonResponse, HttpRequest, HttpResponseBadRequest
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
 
@@ -52,3 +55,34 @@ def save_score(request: HttpRequest):
         row["created_at"] = row["created_at"].isoformat()
 
     return JsonResponse({"ok": True, "top_scores": top_scores})
+
+
+# ==========================
+# Multiplayer (Lobby / Room)
+# ==========================
+
+def _make_code() -> str:
+    return "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
+
+
+def lobby(request: HttpRequest):
+    """
+    GET  -> lobby ekranı
+    POST -> code girilmişse odaya gir, boşsa yeni oda oluştur
+    """
+    if request.method == "POST":
+        code = (request.POST.get("code") or "").strip().upper()
+        if len(code) != 6:
+            code = _make_code()
+        return redirect("game:room", code=code)
+
+    return render(request, "game/lobby.html")
+
+
+def room(request: HttpRequest, code: str):
+    code = (code or "").strip().upper()
+    if len(code) != 6:
+        code = _make_code()
+        return redirect("game:room", code=code)
+
+    return render(request, "game/room.html", {"code": code})
