@@ -4,7 +4,6 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# PROD'da bunu env'den alman daha iyi: os.environ["SECRET_KEY"]
 SECRET_KEY = os.environ.get(
     "SECRET_KEY",
     "django-insecure-change-this-in-production"
@@ -15,7 +14,6 @@ DEBUG = os.environ.get("DEBUG", "True") == "True"
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
 
 INSTALLED_APPS = [
-    # Django core
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -23,10 +21,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    # WebSocket
-    "channels",
-
-    # Your app
     "game",
 ]
 
@@ -47,7 +41,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],              # istersen BASE_DIR / "templates" ekleyebiliriz
+        "DIRS": [],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -59,13 +53,8 @@ TEMPLATES = [
     },
 ]
 
-# HTTP için (klasik)
 WSGI_APPLICATION = "config.wsgi.application"
 
-# WebSocket için (Channels şart)
-ASGI_APPLICATION = "config.asgi.application"
-
-# DB: default SQLite, isterse DATABASE_URL ile Postgres vs
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -79,6 +68,7 @@ if DATABASE_URL:
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -94,10 +84,3 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-# MVP Channel Layer (Redis yok, RAM üstünde)
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    }
-}
